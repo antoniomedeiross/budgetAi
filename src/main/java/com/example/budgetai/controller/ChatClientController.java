@@ -1,4 +1,4 @@
-package com.example.budgetai;
+package com.example.budgetai.controller;
 
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.web.bind.annotation.GetMapping;
