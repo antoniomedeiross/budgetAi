@@ -4,7 +4,9 @@ import com.example.budgetai.application.input.PersistTransactionInput;
 import com.example.budgetai.application.output.TransactionOutput;
 import com.example.budgetai.domain.Transaction;
 import com.example.budgetai.domain.TransactionRepository;
+import org.springframework.stereotype.Service;
 
+@Service
 public class PersistTransactionUseCase {
     private final TransactionRepository transactionRepository;
 

@@ -1,11 +1,14 @@
 package com.example.budgetai.domain;
 
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.util.UUID;
 
 @Getter
+@AllArgsConstructor
 public class Transaction {
     private final TransactionId id;
     private final String description;
