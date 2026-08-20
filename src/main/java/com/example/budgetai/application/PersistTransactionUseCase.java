@@ -4,6 +4,7 @@ import com.example.budgetai.application.input.PersistTransactionInput;
 import com.example.budgetai.application.output.TransactionOutput;
 import com.example.budgetai.domain.Transaction;
 import com.example.budgetai.domain.TransactionRepository;
+import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -14,6 +15,7 @@ public class PersistTransactionUseCase {
         this.transactionRepository = transactionRepository;
     }
 
+    @Tool(name = "persist-transaction", description = "Persiste uma nova transação financeira")
     public TransactionOutput execute(PersistTransactionInput input) {
         var transaction = transactionRepository.save(new Transaction(
             input.description(),
