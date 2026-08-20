@@ -6,6 +6,7 @@ import com.example.budgetai.domain.TransactionRepository;
 import com.example.budgetai.infrastructure.persistence.entity.TransactionEntity;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Repository
@@ -30,6 +31,16 @@ public class JpaTransactionRepository implements TransactionRepository {
                 .stream()
                 .map(TransactionEntity::toDomain)
                 .toList();
+    }
+
+    @Override
+    public BigDecimal sumTotalByCategory(Category category) {
+        return null;
+    }
+
+    @Override
+    public BigDecimal sumTotalAllCategories() {
+        return null;
     }
 }
 

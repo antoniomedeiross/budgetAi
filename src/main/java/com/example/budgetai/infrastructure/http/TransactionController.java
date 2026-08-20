@@ -1,5 +1,6 @@
 package com.example.budgetai.infrastructure.http;
 
+import com.example.budgetai.application.GetSummaryTransactionUseCase;
 import com.example.budgetai.application.ListTransactionByCategoryUseService;
 import com.example.budgetai.application.PersistTransactionUseCase;
 import com.example.budgetai.domain.Category;
@@ -23,25 +24,33 @@ import java.util.List;
 @RestController
 @RequestMapping("/transactions")
 public class TransactionController {
+
     private final PersistTransactionUseCase persistTransactionUseCase;
     private final TranscriptionModel transcriptionModel;
     private final ListTransactionByCategoryUseService listTransactionByCategoryUseService;
+    private final GetSummaryTransactionUseCase getSummaryTransactionUseCase;
     private final ChatClient chatClient;
     private final TextToSpeechModel textToSpeechModel;
-
 
     public TransactionController(PersistTransactionUseCase persistTransactionUseCase,
                                  TranscriptionModel transcriptionModel,
                                  @Value("classpath:prompt/system-message.st") Resource systemPrompt,
                                  ListTransactionByCategoryUseService listTransactionByCategoryUseService,
-                                 ChatClient.Builder chatClient, TextToSpeechModel textToSpeechModel) throws IOException {
+                                 GetSummaryTransactionUseCase getSummaryTransactionUseCase,
+                                 ChatClient.Builder chatClientBuilder,
+                                 TextToSpeechModel textToSpeechModel) throws IOException {
         this.persistTransactionUseCase = persistTransactionUseCase;
         this.transcriptionModel = transcriptionModel;
-        this.textToSpeechModel = textToSpeechModel;
         this.listTransactionByCategoryUseService = listTransactionByCategoryUseService;
-        this.chatClient = chatClient
+        this.getSummaryTransactionUseCase = getSummaryTransactionUseCase;
+        this.textToSpeechModel = textToSpeechModel;
+        this.chatClient = chatClientBuilder
                 .defaultSystem(systemPrompt.getContentAsString(Charset.defaultCharset()))
-                .defaultTools(persistTransactionUseCase, listTransactionByCategoryUseService)
+                .defaultTools(
+                        persistTransactionUseCase,
+                        listTransactionByCategoryUseService,
+                        getSummaryTransactionUseCase
+                )
                 .build();
     }
 
@@ -61,15 +70,12 @@ public class TransactionController {
                 .toList();
     }
 
-
-    @PostMapping(value = "/ai", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = "audio/mp3")
-    ResponseEntity<Resource> transcribe(@RequestParam("file") MultipartFile file) {
+    @PostMapping(value = "/ai", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = "audio/wav")
+    public ResponseEntity<Resource> transcribe(@RequestParam("file") MultipartFile file) {
         var userMessage = transcriptionModel.transcribe(file.getResource());
 
         var result = chatClient.prompt().user(userMessage).call().content();
-        System.out.println(result);
-
-        textToSpeechModel.call(result);
+        System.out.println("Resposta textual da IA: " + result);
 
         byte[] audio = textToSpeechModel.call(result);
         var resource = new ByteArrayResource(audio);
@@ -80,11 +86,5 @@ public class TransactionController {
                                 .filename("output.wav")
                                 .build().toString())
                 .body(resource);
-
-
-
     }
-
-
-
 }
